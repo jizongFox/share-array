@@ -34,7 +34,7 @@
 /*
  * Attach a numpy array from shared memory
  */
-static PyObject *do_attach(const char *name)
+static PyObject *do_attach(const char *name, int ro)
 {
 	struct array_meta *meta;
 	int fd;
@@ -46,7 +46,7 @@ static PyObject *do_attach(const char *name)
 	npy_intp dims[NPY_MAXDIMS];
 
 	/* Open the file */
-	if ((fd = open_file(name, O_RDWR, 0)) < 0)
+	if ((fd = open_file(name, ro ? O_RDONLY : O_RDWR, 0)) < 0)
 		return PyErr_SetFromErrnoWithFilename(PyExc_OSError, name);
 
 	/* Find the file size */
@@ -64,7 +64,9 @@ static PyObject *do_attach(const char *name)
 	map_size = file_info.st_size;
 
 	/* Map the array data */
-	map_addr = mmap(NULL, map_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+	map_addr = mmap(NULL, map_size,
+	                PROT_READ | (ro ? 0 : PROT_WRITE),
+	                MAP_SHARED, fd, 0);
 	close(fd);
 	if (map_addr == MAP_FAILED)
 		return PyErr_SetFromErrnoWithFilename(PyExc_OSError, name);
@@ -102,6 +104,17 @@ static PyObject *do_attach(const char *name)
 	                    meta->typenum, NULL, map_addr, meta->itemsize,
 	                    NPY_ARRAY_CARRAY, NULL);
 
+	/* Optionally mark it read-only. */
+	if (ro) {
+		PyObject *res;
+
+		res = PyObject_CallMethod(array, "setflags", "OOO",
+		                          Py_False, Py_None, Py_None);
+		if (res != NULL) {
+			Py_DECREF(res);
+		}
+	}
+
 	/* Attach MapOwner to the array */
 	PyArray_SetBaseObject((PyArrayObject *) array, (PyObject *) map_owner);
 	return array;
@@ -110,14 +123,17 @@ static PyObject *do_attach(const char *name)
 /*
  * Method: SharedArray.attach()
  */
-PyObject *shared_array_attach(PyObject *self, PyObject *args)
+PyObject *shared_array_attach(PyObject *self, PyObject *args, PyObject *kwds)
 {
+	char *kwlist[] = { "name", "ro", NULL };
 	const char *name;
+	int ro = 0;
 
 	/* Parse the arguments */
-	if (!PyArg_ParseTuple(args, "s", &name))
+	if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|p", kwlist,
+	                                 &name, &ro))
 		return NULL;
 
 	/* Now do the real thing */
-	return do_attach(name);
+	return do_attach(name, ro);
 }
