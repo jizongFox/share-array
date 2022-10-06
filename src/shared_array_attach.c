@@ -43,6 +43,7 @@ static PyObject *do_attach(const char *name)
 	void *map_addr;
 	PyObject *array;
 	PyMapOwnerObject *map_owner;
+	npy_intp dims[NPY_MAXDIMS];
 
 	/* Open the file */
 	if ((fd = open_file(name, O_RDWR, 0)) < 0)
@@ -92,8 +93,12 @@ static PyObject *do_attach(const char *name)
 	map_owner->map_size = map_size;
 	map_owner->name = strdup(name);
 
+	/* Copy the dims[] array out of the packed structure */
+	for (int i = 0; i < meta->ndims; i++)
+		dims[i] = meta->dims[i];
+
 	/* Create the array object */
-	array = PyArray_New(&PyArray_Type, meta->ndims, meta->dims,
+	array = PyArray_New(&PyArray_Type, meta->ndims, dims,
 	                    meta->typenum, NULL, map_addr, meta->itemsize,
 	                    NPY_ARRAY_CARRAY, NULL);
 

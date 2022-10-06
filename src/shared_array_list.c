@@ -108,6 +108,11 @@ static PyObject *convert_dims(int ndims, npy_intp *dims)
 static struct list *list_extend(struct list *next, struct array_meta *meta, const char *name)
 {
 	struct list *list;
+	npy_intp dims[NPY_MAXDIMS];
+
+	/* Copy the dims[] array out of the packed structure */
+	for (int i = 0; i < meta->ndims; i++)
+		dims[i] = meta->dims[i];
 
 	/* Allocate the new list element */
 	if (!(list = malloc(sizeof (*list)))) {
@@ -121,7 +126,7 @@ static struct list *list_extend(struct list *next, struct array_meta *meta, cons
 
 	PyStructSequence_SET_ITEM(list->desc, 0, PyBytes_FromString(name));
 	PyStructSequence_SET_ITEM(list->desc, 1, PyArray_TypeObjectFromType(meta->typenum));
-	PyStructSequence_SET_ITEM(list->desc, 2, convert_dims(meta->ndims, meta->dims));
+	PyStructSequence_SET_ITEM(list->desc, 2, convert_dims(meta->ndims, dims));
 
 	/* Return the new element */
 	return list;
