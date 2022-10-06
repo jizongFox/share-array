@@ -56,7 +56,7 @@ static PyObject *do_attach(const char *name)
 	}
 
 	/* Ignore short files */
-	if (file_info.st_size < sizeof (*meta)) {
+	if (file_info.st_size < (off_t) sizeof (*meta)) {
 		close(fd);
 		PyErr_SetString(PyExc_IOError, "No SharedArray at this address");
 		return NULL;

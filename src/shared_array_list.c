@@ -69,7 +69,7 @@ static int get_meta(const char *filename, struct array_meta *meta)
 		goto ret;
 
 	/* Ignore short files */
-	if (file_info.st_size < sizeof (*meta))
+	if (file_info.st_size < (off_t) sizeof (*meta))
 		goto ret;
 
 	/* Seek to the meta data location */
