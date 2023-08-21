@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #
 # This file is part of SharedArray.
-# Copyright (C) 2014-2018 Mathieu Mirmont <mat@parad0x.org>
+# Copyright (C) 2014-2023 Mathieu Mirmont <mat@parad0x.org>
 #
 # SharedArray is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -99,12 +99,7 @@ setup(
         'Operating System :: POSIX',
         'Operating System :: Unix',
         'Programming Language :: C',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6',
     ],
     keywords = 'numpy array shared memory shm',
 
