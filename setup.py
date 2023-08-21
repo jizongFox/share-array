@@ -55,8 +55,8 @@ def get_version():
     # package from the git tree.
     try:
         import subprocess
-        command = ['git', 'describe', '--tags', '--always', '--dirty']
-        return str(subprocess.check_output(command))
+        command = ['git', 'describe', '--tags', '--always', '--dirty=+dirty']
+        return subprocess.check_output(command).strip().decode()
     except:
         pass
 
